@@ -1,5 +1,5 @@
 const express = require('express')
-const { get_now, insertar, consultar, editar, eliminar, total_reps }= require('./db.js')
+const { insertarusuario, editarusuario, consultausuarios, eliminausuario, consultatransferencias, add_transferencia }= require('./db.js')
 
 const app = express()
 app.use(express.static('static'))
@@ -21,16 +21,14 @@ app.post('/usuario', async (req, res) => {
     req.on("end", async () => {
         // primero desempaquetamos la respuesta
         const datos = Object.values(JSON.parse(body));
-        // llamamos a la función insertar
         try {
-        const algo = await insertarusuario(datos[0], datos[1])  // nombre, balance
+            // llamamos a la función insertar
+            const retorna = await insertarusuario(datos[0], datos[1])  // nombre, balance
         } catch(error) {
-        return res.status(400).send(error.message)
+            return res.status(400).send(error.message)
         }
-        //res.end(JSON.stringify(respuesta));
-        // devolvemos "algo"
         res.status(201)
-        res.send(algo)
+        res.send()
     })
 })
 
@@ -56,6 +54,7 @@ app.put('/usuario', async (req, res) => {
 
 // linea 244 emisor receptor monto
 app.post('/transferencia', async (req, res) => {
+
     let body = ""
 
     req.on("data", (data) => {
@@ -65,37 +64,39 @@ app.post('/transferencia', async (req, res) => {
     req.on("end", async () => {
         // primero desempaquetamos la respuesta
         const datos = Object.values(JSON.parse(body));
-        // llamamos a la función insertar
+
         try {
-        const algo = await transferencia(datos[0], datos[1], datos[2])   // emisor, receptor, monto
+
+            const transfer = await add_transferencia(datos[0], datos[1], datos[2]);
+
         } catch(error) {
-        return res.status(400).send(error.message)
+            return res.status(400).send(error.message)
         }
         //res.end(JSON.stringify(respuesta));
         // devolvemos "algo"
         res.status(201)
-        res.send(algo)
+        res.send("")
     })
 })
 
 // linea 261 nombre balance
 app.get('/usuarios', async (req, res) => {
-    const ejercicios = await consultar()
-    res.send(JSON.stringify(ejercicios))
+    const retornousuarios = await consultausuarios()
+    res.send(JSON.stringify(retornousuarios))
 })
 
 
 // linea 289 eliminaUsuario
 app.delete('/usuario', async (req, res) => {
-    await eliminar(req.query.nombre)
+    await eliminausuario(req.query.id)
     res.send('Eliminado')
 })
 
 // linea 296 - gettransferencias
 app.get('/transferencias', async (req, res) => {
-    const total = await total_reps()
-    res.send(`Hay en total ${total} repeticiones`)
-});
+    const transfer = await consultatransferencias()
+    res.send(JSON.stringify(transfer))
+})
 
 
 app.listen(3000, () => console.log('Servidor en puerto 3000'))
